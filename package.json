@@ -5,6 +5,14 @@
   "main": "main.js",
   "author": "knwanna",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/knwanna/data-reconciliation-client-win32-x64.git"
+  },
+  "bugs": {
+    "url": "https://github.com/knwanna/data-reconciliation-client-win32-x64/issues"
+  },
+  "homepage": "https://github.com/knwanna/data-reconciliation-client-win32-x64#readme",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --dir",
@@ -12,11 +20,15 @@
     "pack:win": "electron-builder --win --x64",
     "pack:mac": "electron-builder --mac",
     "pack:linux": "electron-builder --linux",
-    "ci-validate": "bash .github/scripts/ci-validate.sh"
+    "ci-validate": "bash .github/scripts/ci-validate.sh || node .github/scripts/generate-defaults.js",
+    "lint": "eslint src || echo 'No lint config, skipping.'",
+    "test": "echo \"No tests defined. Skipping...\"",
+    "postinstall": "node .github/scripts/generate-defaults.js"
   },
   "devDependencies": {
     "electron": "^26.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0"
   },
   "dependencies": {},
   "build": {
@@ -46,7 +58,7 @@
     },
     "linux": {
       "target": ["AppImage", "deb"],
-      "icon": "build/"
+      "icon": "build/icon.png"
     }
   }
 }

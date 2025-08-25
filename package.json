@@ -1,51 +1,52 @@
 {
   "name": "data-reconciliation-client",
   "version": "1.0.0",
-  "description": "Cross-platform Electron client for Data Reconciliation (Windows, macOS, Linux).",
-  "main": "src/main.js",
-  "author": "KNwanna <youremail@example.com>",
+  "description": "Data Reconciliation Client - cross-platform Electron app",
+  "main": "main.js",
+  "author": "knwanna",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dev": "concurrently \"npm run start\"",
     "build": "electron-builder --dir",
     "dist": "electron-builder --publish never",
-    "release": "electron-builder --publish always"
+    "pack:win": "electron-builder --win --x64",
+    "pack:mac": "electron-builder --mac",
+    "pack:linux": "electron-builder --linux",
+    "ci-validate": "bash .github/scripts/ci-validate.sh"
   },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {},
   "build": {
     "appId": "com.knwanna.datareconciliation",
     "productName": "Data Reconciliation Client",
+    "asar": true,
+    "compression": "maximum",
     "files": [
+      "main.js",
+      "preload.js",
       "src/**/*",
-      "package.json"
+      "package.json",
+      "build/**/*",
+      "!node_modules/**/test/**"
     ],
-    "extraResources": [
-      {
-        "from": "assets/",
-        "to": "assets",
-        "filter": ["**/*"]
-      }
-    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
     "win": {
-      "target": ["nsis", "zip"],
-      "compression": "maximum",
-      "artifactName": "data-reconciliation-client-${version}-win.${ext}"
+      "target": ["nsis", "portable"],
+      "icon": "build/icon.ico"
     },
     "mac": {
       "target": ["dmg", "zip"],
-      "category": "public.app-category.utilities",
-      "artifactName": "data-reconciliation-client-${version}-mac.${ext}"
+      "icon": "build/icon.icns"
     },
     "linux": {
-      "target": ["AppImage", "deb", "tar.gz"],
-      "artifactName": "data-reconciliation-client-${version}-linux.${ext}"
+      "target": ["AppImage", "deb"],
+      "icon": "build/"
     }
-  },
-  "devDependencies": {
-    "electron": "^32.0.0",
-    "electron-builder": "^24.13.3",
-    "concurrently": "^8.2.2",
-    "wait-on": "^7.2.0"
-  },
-  "dependencies": {}
+  }
 }

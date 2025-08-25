@@ -1,48 +1,83 @@
-name: Build & Release Windows App
+name: Build & Release (Windows, macOS, Linux)
 
 on:
   push:
     tags:
-      - 'v*'   # runs when a tag like v1.0.0 is created
+      - 'v*'   # triggers on tags like v1.0.0
 
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build Windows app
-        run: npm run dist
+      # Build per platform to avoid cross-compile attempts
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npm run dist:win
+
+      - name: Build (macOS)
+        if: matrix.os == 'macos-latest'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"   # don't try to code-sign
+        run: npm run dist:mac
+
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run dist:linux
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: windows-build
-          path: dist/*
+          name: ${{ matrix.os }}-artifacts
+          path: |
+            dist/**
+            !dist/*.blockmap
 
   release:
+    name: Publish Release
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: windows-build
-          path: ./dist
+          name: windows-latest-artifacts
+          path: ./dist/windows
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-artifacts
+          path: ./dist/macos
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-latest-artifacts
+          path: ./dist/linux
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: ./dist/*
+          files: |
+            dist/windows/**
+            dist/macos/**
+            dist/linux/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

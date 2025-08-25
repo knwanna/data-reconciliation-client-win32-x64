@@ -1,70 +1,62 @@
-name: Release
+name: Build & Release
 
 on:
   push:
     tags:
-      - "v*.*.*"   # only trigger on version tags like v1.0.0
+      - "v*.*.*"
 
 jobs:
-  build-and-release:
-    name: Build, Compress & Release
+  build:
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      # 1. Checkout
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
-      # 3. Install dependencies (clean)
-      - name: Install dependencies
+      - name: Install dependencies (clean)
         run: npm ci
 
-      # 4. Build app
-      - name: Build Electron app
+      - name: Build app
         run: npm run build
 
-      # 5. Package app
-      - name: Package Electron app
-        run: npx electron-builder --${{ runner.os }} --publish never
+      - name: Package app
+        run: npm run dist
 
-      # 6. Compress artifacts (force ultra)
-      - name: Compress build artifacts
-        run: |
-          mkdir compressed
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            tar -I 'zstd -19 -T0' -cf compressed/app-${{ runner.os }}.tar.zst dist/
-          elif [ "${{ runner.os }}" = "macOS" ]; then
-            tar -I 'zstd -19 -T0' -cf compressed/app-${{ runner.os }}.tar.zst dist/
-          else
-            7z a -t7z -mx=9 compressed/app-${{ runner.os }}.7z dist\*
-          fi
-
-      # 7. Upload compressed artifact for debugging
-      - name: Upload compressed artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ runner.os }}
-          path: compressed/*
+          name: ${{ runner.os }}-build
+          path: dist/**
+          if-no-files-found: error
+          compression-level: 9
 
-      # 8. Publish GitHub Release
-      - name: Create GitHub Release
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Display downloaded files
+        run: ls -R ./artifacts
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: compressed/*
+          files: ./artifacts/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # 9. Always cleanup (enterprise hygiene)
-      - name: Cleanup
-        if: always()
-        run: rm -rf node_modules dist compressed || true

@@ -10,7 +10,10 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder -mwl"
+    "dist": "electron-builder -mwl",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.3",
@@ -42,7 +45,9 @@
         },
         {
           "name": "@electron-forge/maker-zip",
-          "platforms": ["win32"]
+          "platforms": [
+            "win32"
+          ]
         }
       ]
     }
@@ -52,6 +57,7 @@
     "productName": "DataReconciliationClient",
     "compression": "maximum",
     "asar": true,
+    "publish": "never",
     "files": [
       "**/*",
       "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
@@ -61,21 +67,29 @@
       "!**/node_modules/*/example{,s}/**"
     ],
     "win": {
-      "target": ["nsis", "portable"],
-      "icon": "src/assets/app-icon.ico"
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "target": ["AppImage", "deb", "rpm"],
-      "category": "Utility",
-      "icon": "src/assets/"
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
     },
     "mac": {
-      "target": ["dmg", "zip"],
-      "icon": "src/assets/app-icon.icns"
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "identity": null
     }
   }
 }

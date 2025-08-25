@@ -1,95 +1,51 @@
 {
   "name": "data-reconciliation-client",
   "version": "1.0.0",
-  "description": "An Electron app for reconciling data against a mock literary works dataset.",
-  "main": "main.js",
-  "author": "",
-  "license": "ISC",
+  "description": "Cross-platform Electron client for Data Reconciliation (Windows, macOS, Linux).",
+  "main": "src/main.js",
+  "author": "KNwanna <youremail@example.com>",
+  "license": "MIT",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder -mwl",
-    "dist:win": "electron-builder --win",
-    "dist:mac": "electron-builder --mac",
-    "dist:linux": "electron-builder --linux"
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^7.8.3",
-    "@electron-forge/maker-deb": "^7.8.3",
-    "@electron-forge/maker-rpm": "^7.8.3",
-    "@electron-forge/maker-squirrel": "^7.8.3",
-    "@electron-forge/maker-zip": "^7.8.3",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.8.3",
-    "@electron-forge/plugin-fuses": "^7.8.3",
-    "@electron/fuses": "^1.8.0",
-    "electron": "^26.1.0",
-    "electron-builder": "^24.13.3"
-  },
-  "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "icon": "src/assets/app-icon"
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "iconUrl": "https://url/to/app-icon.ico",
-            "setupIcon": "src/assets/app-icon.ico"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "win32"
-          ]
-        }
-      ]
-    }
+    "start": "electron .",
+    "dev": "concurrently \"npm run start\"",
+    "build": "electron-builder --dir",
+    "dist": "electron-builder --publish never",
+    "release": "electron-builder --publish always"
   },
   "build": {
     "appId": "com.knwanna.datareconciliation",
-    "productName": "DataReconciliationClient",
-    "compression": "maximum",
-    "asar": true,
-    "publish": "never",
+    "productName": "Data Reconciliation Client",
     "files": [
-      "**/*",
-      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/node_modules/.bin",
-      "!**/node_modules/*/test{,s}/**",
-      "!**/node_modules/*/docs/**",
-      "!**/node_modules/*/example{,s}/**"
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets",
+        "filter": ["**/*"]
+      }
     ],
     "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Utility"
+      "target": ["nsis", "zip"],
+      "compression": "maximum",
+      "artifactName": "data-reconciliation-client-${version}-win.${ext}"
     },
     "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
+      "target": ["dmg", "zip"],
       "category": "public.app-category.utilities",
-      "identity": null
+      "artifactName": "data-reconciliation-client-${version}-mac.${ext}"
+    },
+    "linux": {
+      "target": ["AppImage", "deb", "tar.gz"],
+      "artifactName": "data-reconciliation-client-${version}-linux.${ext}"
     }
-  }
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^24.13.3",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {}
 }

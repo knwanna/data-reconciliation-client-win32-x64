@@ -1,7 +1,7 @@
 {
   "name": "data-reconciliation-client",
   "version": "1.0.0",
-  "description": "Data Reconciliation Client - cross-platform Electron app",
+  "description": "Data Reconciliation Client - cross-platform Software",
   "main": "main.js",
   "author": "knwanna",
   "license": "MIT",

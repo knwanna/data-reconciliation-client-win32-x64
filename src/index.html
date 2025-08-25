@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Reconciliation Client</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Data Reconciliation Client</h1>
+        <p>Enter a query to reconcile against the mock literary works dataset.</p>
+        
+        <div class="input-section">
+            <input type="text" id="queryInput" placeholder="Enter your query">
+            <button onclick="reconcile()">Reconcile</button>
+        </div>
+
+        <div class="results-section">
+            <p id="resultsText">Enter a query and click 'Reconcile' to see results.</p>
+            <div id="loading" style="display: none;">
+                <p>Fetching results...</p>
+            </div>
+            <div id="results"></div>
+        </div>
+    </div>
+    <script src="js/renderer.js"></script>
+</body>
+</html>

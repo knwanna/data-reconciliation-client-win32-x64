@@ -1,10 +1,10 @@
-name: Build & Release (multi-OS, single Release)
+name: Build & Release (robust multi-OS)
 
 on:
   push:
     tags:
-      - 'v*.*.*'
-  workflow_dispatch:
+      - 'v*.*.*'        # Trigger on version tags like v1.0.0
+  workflow_dispatch:    # Manual trigger support
 
 concurrency:
   group: release-${{ github.ref }}
@@ -31,10 +31,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -46,10 +46,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (production)
+      - name: Build production app
         run: npm run dist
 
-      - name: Compress artifacts (ultra)
+      - name: Compress artifacts
         shell: bash
         run: |
           mkdir -p compressed
@@ -58,7 +58,6 @@ jobs:
           elif [ "${{ runner.os }}" = "macOS" ]; then
             tar -I 'zstd -19 -T0' -cf compressed/app-macos.tar.zst dist/ || ls -la dist || exit 0
           else
-            # Windows: use 7z (preinstalled on windows-latest)
             powershell -Command "if (!(Test-Path compressed)) { New-Item -ItemType Directory -Path compressed }"
             7z a -t7z -mx=9 compressed/app-windows.7z dist\* || dir dist
           fi
@@ -68,6 +67,10 @@ jobs:
         with:
           name: ${{ matrix.os }}-compressed
           path: compressed/*
+
+      - name: Cleanup build files
+        if: always()
+        run: rm -rf node_modules dist compressed || true
 
   publish:
     name: Publish Release (collect artifacts)
@@ -114,3 +117,7 @@ jobs:
           files: release_assets/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup publish files
+        if: always()
+        run: rm -rf artifacts release_assets || true
